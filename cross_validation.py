@@ -8,7 +8,7 @@ from sklearn.model_selection import KFold, train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # Constants
-DEFAULT_CSV_PATH = "/home/usd.local/athul.prem/mei_lab/shared/Athul/workshop2/_Data_with_Exponential_Format.csv"
+DEFAULT_CSV_PATH = "example_data.csv"
 DEFAULT_OUTDIR = "results_hpge"
 GROUP_COL = "SheetName"
 LABEL_COL = "Detector grade portion (%)"
