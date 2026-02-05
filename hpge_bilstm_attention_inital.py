@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from tensorflow.keras.losses import Huber
 
-file_path = "strict_full_converted_data.csv"
+file_path = "example_data.csv"
 data = pd.read_csv(file_path)
 for col in data.columns:
     if data[col].dtype == 'object' and col != "SheetName":
