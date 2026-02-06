@@ -1,6 +1,7 @@
 """
 HPGe Detector-Grade Yield Prediction
 BiLSTM with Multi-Head Attention Model for Crystal Growth Optimization
+The model updates regularly as the features and the data structure of the crystal growth adds
 """
 
 import os
