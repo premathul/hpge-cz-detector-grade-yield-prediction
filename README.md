@@ -1,7 +1,7 @@
 HPGe Crystal Growth — ML Modeling Repository
 Overview
 
-This repository contains data preparation, machine learning, and analysis workflows developed for studying and predicting detector-grade yield in High-Purity Germanium (HPGe) crystal growth. All modeling, preprocessing, and training were carried out on the USD Lawrence Supercomputing Cluster under iterative experimental development.
+This repository contains data preparation, machine learning, and analysis workflows developed for studying and predicting detector-grade yield in High-Purity Germanium (HPGe) crystal growth. All modeling, preprocessing, and training were carried out on the USD Lawrence Supercomputing Cluster under iterative experimental development. The codebase is actively maintained and periodically updated as new experimental data, additional features, and improved preprocessing strategies become available. The version used to generate the results reported in the associated manuscript corresponds to a fixed experimental configuration. Subsequent updates are intended to improve robustness, extend functionality, and support future data integration; therefore, minor variations in performance metrics may occur when running newer versions of the code.
 
 Data Description
 
