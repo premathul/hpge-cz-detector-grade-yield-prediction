@@ -1,0 +1,52 @@
+# LAMMPS Input: Melt the Upper Half of a Germanium Slab with Impurities (Updated)
+
+units           metal
+dimension       3
+boundary        p p f
+atom_style      atomic
+
+read_data       data.ge_solid_liquid_impurities.lammps
+
+# ---------- Define Potential ----------
+pair_style      sw
+pair_coeff      * * Ge_B_Al_Ga_P_full.sw Ge B Al Ga P
+
+# ---------- Group Definitions ----------
+region          bottom block INF INF INF INF INF 22.6 units box
+region          top block INF INF INF INF 22.6 INF units box
+
+group           solid region bottom
+group           melt region top
+group           impurities type 2 3 4 5
+
+# ---------- Fix Solid Region ----------
+fix             freeze solid setforce 0.0 0.0 0.0
+
+# ---------- Initialize Velocities ----------
+velocity        all create 2000.0 4928459 dist gaussian mom yes rot yes
+# Removed invalid 'limit' keyword
+
+# ---------- Neighbor Setup ----------
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes
+
+# ---------- Thermo Output ----------
+thermo          100
+thermo_style    custom step temp pe ke etotal press
+thermo_modify   lost ignore
+
+# ---------- Add Wall to Prevent Atom Loss ----------
+fix             wall all wall/reflect zhi EDGE
+
+# ---------- Dump Configuration ----------
+dump            1 all custom 500 dump.melt.lammpstrj id type x y z vx vy vz
+
+timestep        0.001
+
+# ---------- Melt Simulation ----------
+fix             ensemble all nvt temp 2000.0 2000.0 0.1
+run             50000
+
+# ---------- Save State ----------
+write_data      post_melt_solid_liquid.data
+write_restart   post_melt_solid_liquid.restart
