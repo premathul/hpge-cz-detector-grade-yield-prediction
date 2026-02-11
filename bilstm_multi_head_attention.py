@@ -1,7 +1,6 @@
 """
 HPGe Detector-Grade Yield Prediction
 BiLSTM with Multi-Head Attention Model for Crystal Growth Optimization
-The model updates regularly as the features and the data structure of the crystal growth adds
 """
 
 import os
@@ -12,10 +11,8 @@ import json
 import warnings
 warnings.filterwarnings('ignore')
 
-# Environment configuration
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# TensorFlow and Keras imports
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (
     Input, LSTM, Dense, Dropout, BatchNormalization, 
@@ -29,7 +26,7 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 
-# ==================== CONFIGURATION ====================
+
 CONFIG = {
     'csv_path': 'strict_full_converted_data.csv',
     'output_dir': 'model_results',
@@ -47,7 +44,7 @@ CONFIG = {
     'dropout_rate': 0.2,
 }
 
-# ==================== DATA PREPARATION ====================
+
 def prepare_dataset(file_path):
     """Load and preprocess crystal growth time-series data."""
     df = pd.read_csv(file_path)
@@ -63,7 +60,7 @@ def prepare_dataset(file_path):
         'Number of net impurity of previous crystal added'
     ]
     
-    # Apply logarithmic transformation to impurity columns
+    
     impurity_cols = ['No. of net impurity atoms added', 
                     'Number of net impurity of previous crystal added']
     
@@ -71,7 +68,7 @@ def prepare_dataset(file_path):
         if col in df.columns:
             df[col] = np.log1p(np.abs(df[col]) + 1e-10)
     
-    # Group by crystal and create sequences
+    
     sequences = []
     targets = []
     crystal_names = []
@@ -83,7 +80,7 @@ def prepare_dataset(file_path):
         if np.any(np.isnan(X)) or np.any(np.isinf(X)):
             continue
         
-        # Target is maximum detector grade percentage for the crystal
+        
         y = group['Detector grade portion (%)'].astype(np.float32).max()
         
         if 0 <= y <= 100 and len(X) >= 3:
@@ -108,12 +105,12 @@ def pad_sequences(sequences):
     
     return X, mask, np.array(lengths)
 
-# ==================== MODEL ARCHITECTURE ====================
+
 def build_model(seq_len, n_features):
     """Build BiLSTM with Multi-Head Attention sequence model."""
     inputs = Input(shape=(seq_len, n_features))
     
-    # Mask invalid timesteps
+    
     x = Masking(mask_value=0.0)(inputs)
     
     # Bidirectional LSTM layers
@@ -369,9 +366,9 @@ def analyze_and_save_results(results, predictions, dataset_shape):
     return results_df, preds_df, summary
 
 def create_result_visualizations(predictions_df, results_df, summary):
-    """Generate analytical visualizations of model performance."""
+    
     try:
-        # Aggregate crystal-level statistics
+        
         crystal_stats = predictions_df.groupby('crystal').agg({
             'actual': 'first',
             'predicted': ['mean', 'std'],
@@ -380,10 +377,10 @@ def create_result_visualizations(predictions_df, results_df, summary):
         
         crystal_stats.columns = ['crystal', 'actual', 'pred_mean', 'pred_std', 'error_mean', 'error_std']
         
-        # Create figure with subplots
+        
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
         
-        # Plot 1: Actual vs Predicted
+        
         ax1 = axes[0, 0]
         ax1.errorbar(crystal_stats['actual'], crystal_stats['pred_mean'],
                     yerr=crystal_stats['pred_std'], fmt='o', capsize=5, alpha=0.7)
@@ -393,41 +390,41 @@ def create_result_visualizations(predictions_df, results_df, summary):
         ax1.set_title('Model Predictions vs Actual Values')
         ax1.grid(True, alpha=0.3)
         
-        # Plot 2: MAE distribution
-        ax2 = axes[0, 1]
-        ax2.hist(results_df['mae'], bins=12, edgecolor='black', alpha=0.7)
-        ax2.axvline(x=summary['average_mae'], color='red', linestyle='--', 
-                   label=f'Mean: {summary["average_mae"]:.2f}')
-        ax2.set_xlabel('Mean Absolute Error (Percentage Points)')
-        ax2.set_ylabel('Frequency')
-        ax2.set_title('Cross-Validation MAE Distribution')
-        ax2.legend()
         
-        # Plot 3: Fold performance comparison
-        ax3 = axes[1, 0]
-        results_df['fold_label'] = results_df['seed'].astype(str) + '-' + results_df['fold'].astype(str)
-        ax3.bar(range(len(results_df)), results_df['mae'])
-        ax3.set_xticks(range(len(results_df)))
-        ax3.set_xticklabels(results_df['fold_label'], rotation=90)
-        ax3.set_xlabel('Validation Fold (Seed-Fold)')
-        ax3.set_ylabel('MAE')
-        ax3.set_title('Performance Across Validation Folds')
+        #ax2 = axes[0, 1]
+        #ax2.hist(results_df['mae'], bins=12, edgecolor='black', alpha=0.7)
+        #ax2.axvline(x=summary['average_mae'], color='red', linestyle='--', 
+         #          label=f'Mean: {summary["average_mae"]:.2f}')
+        #ax2.set_xlabel('Mean Absolute Error (Percentage Points)')
+        #ax2.set_ylabel('Frequency')
+        #ax2.set_title('Cross-Validation MAE Distribution')
+        #ax2.legend()
+        
+        # Plot 3: 
+        #ax3 = axes[1, 0]
+        #results_df['fold_label'] = results_df['seed'].astype(str) + '-' + results_df['fold'].astype(str)
+        #ax3.bar(range(len(results_df)), results_df['mae'])
+        #ax3.set_xticks(range(len(results_df)))
+        #ax3.set_xticklabels(results_df['fold_label'], rotation=90)
+        #ax3.set_xlabel('Validation Fold (Seed-Fold)')
+        #ax3.set_ylabel('MAE')
+        #ax3.set_title('Performance Across Validation Folds')
         
         # Plot 4: Error analysis by crystal
-        ax4 = axes[1, 1]
-        crystal_stats_sorted = crystal_stats.sort_values('actual')
-        ax4.bar(range(len(crystal_stats_sorted)), crystal_stats_sorted['error_mean'],
-               yerr=crystal_stats_sorted['error_std'], capsize=3, alpha=0.7)
-        ax4.set_xticks(range(len(crystal_stats_sorted)))
-        ax4.set_xticklabels(crystal_stats_sorted['crystal'], rotation=90)
-        ax4.set_xlabel('Crystal Identifier')
-        ax4.set_ylabel('Mean Prediction Error (%)')
-        ax4.set_title('Prediction Accuracy by Crystal')
+        #ax4 = axes[1, 1]
+        #crystal_stats_sorted = crystal_stats.sort_values('actual')
+        #ax4.bar(range(len(crystal_stats_sorted)), crystal_stats_sorted['error_mean'],
+         #      yerr=crystal_stats_sorted['error_std'], capsize=3, alpha=0.7)
+        #ax4.set_xticks(range(len(crystal_stats_sorted)))
+        #ax4.set_xticklabels(crystal_stats_sorted['crystal'], rotation=90)
+        #ax4.set_xlabel('Crystal Identifier')
+        #ax4.set_ylabel('Mean Prediction Error (%)')
+        #ax4.set_title('Prediction Accuracy by Crystal')
         
-        plt.tight_layout()
-        plt.savefig(f"{CONFIG['output_dir']}/performance_analysis.png", 
-                   dpi=300, bbox_inches='tight')
-        plt.close()
+        #plt.tight_layout()
+        #plt.savefig(f"{CONFIG['output_dir']}/performance_analysis.png", 
+         #          dpi=300, bbox_inches='tight')
+        #plt.close()
         
     except Exception as e:
         print(f"Visualization generation skipped: {str(e)}")
