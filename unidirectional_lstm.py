@@ -1,6 +1,6 @@
 """
 Unidirectional LSTM for HPGe Detector-Grade Yield Prediction
-Implements methodology from Section 4.1 of the paper.
+
 """
 
 import os
@@ -20,7 +20,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 import warnings
 warnings.filterwarnings('ignore')
 
-# Set random seeds for reproducibility
+
 SEED = 42
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
@@ -71,18 +71,18 @@ def load_and_preprocess_data(file_path='strict_full_converted_data.csv'):
     return X_padded, np.array(targets)
 
 def build_unidirectional_lstm(seq_len, n_features):
-    """Build Unidirectional LSTM model as per paper architecture."""
+    
     inputs = Input(shape=(seq_len, n_features))
     
     # Masking layer for variable-length sequences
     x = Masking(mask_value=0.0)(inputs)
     
-    # LSTM layers (paper: 128, 64, 32 units)
+    
     x = LSTM(128, return_sequences=True, dropout=0.2, recurrent_dropout=0.2)(x)
     x = LSTM(64, return_sequences=True, dropout=0.2, recurrent_dropout=0.2)(x)
     x = LSTM(32, return_sequences=False, dropout=0.2, recurrent_dropout=0.2)(x)
     
-    # Dense layers (paper: 128, 64, 32 units)
+    # Dense layers 
     x = Dense(128, activation='relu')(x)
     x = Dropout(0.2)(x)
     x = Dense(64, activation='relu')(x)
@@ -95,7 +95,7 @@ def build_unidirectional_lstm(seq_len, n_features):
     
     model = Model(inputs=inputs, outputs=outputs)
     
-    # Compile with paper parameters
+    
     model.compile(
         optimizer=Adam(learning_rate=1e-3),
         loss=Huber(delta=1.0),
@@ -187,7 +187,7 @@ def main():
     print("Unidirectional LSTM for HPGe Yield Prediction")
     print("="*50)
     
-    # Load and preprocess data
+    
     X, y = load_and_preprocess_data()
     print(f"Dataset shape: {X.shape}")
     print(f"Target range: {y.min():.1f}% to {y.max():.1f}%")
