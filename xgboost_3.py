@@ -2,10 +2,6 @@
 """
 Native XGBoost CV baseline for HPGe detector-grade yield prediction.
 
-Why this version:
-- Your environment's xgb.XGBRegressor.fit() rejects early_stopping_rounds / callbacks / eval_metric.
-- Native API xgb.train() supports early stopping reliably.
-
 Protocol:
 - Load CZ logs
 - Group by SheetName -> per-crystal sequence
@@ -43,7 +39,7 @@ def load_and_preprocess_data(file_path: str = "strict_full_converted_data.csv"):
     ]
     target_col = "Detector grade portion (%)"
 
-    # log1p transform impurity columns (kept from your baseline)
+    
     impurity_cols = [
         "No. of net impurity atoms added",
         "Number of net impurity of previous crystal added",
@@ -71,8 +67,7 @@ def load_and_preprocess_data(file_path: str = "strict_full_converted_data.csv"):
     if len(sequences) == 0:
         raise RuntimeError("No valid crystal sequences found. Check CSV columns and data.")
 
-    # Convert variable-length sequences -> fixed-length tabular features:
-    # for each feature: [mean, std, min, max]
+    
     X_tabular = []
     for seq in sequences:
         feats = []
@@ -96,7 +91,7 @@ def train_one_model(X_train, y_train, X_val, y_val, params, num_boost_round=5000
 
     watchlist = [(dtrain, "train"), (dval, "val")]
 
-    # Put eval_metric into params (native API uses this)
+    
     train_params = dict(params)
     train_params["objective"] = "reg:squarederror"
     train_params["eval_metric"] = "mae"
@@ -112,8 +107,7 @@ def train_one_model(X_train, y_train, X_val, y_val, params, num_boost_round=5000
         verbose_eval=False,
     )
 
-    # Booster tracks best_score on the last eval set metric: "val-mae"
-    # In some versions you can access booster.best_score directly.
+    
     best_score = float(booster.best_score) if booster.best_score is not None else np.inf
     best_iter = int(booster.best_iteration) + 1  # best_iteration is 0-based
 
@@ -126,7 +120,7 @@ def run_xgboost_cv_native(X, y, n_folds=5):
     mae_scores = []
     rmse_scores = []
 
-    # Grid (same values you used)
+    # Grid 
     param_grid = {
         "max_depth": [3, 6, 9],
         "eta": [0.01, 0.1, 0.3],          # 'eta' is learning_rate in native API
@@ -161,7 +155,7 @@ def run_xgboost_cv_native(X, y, n_folds=5):
                 best_params = params
                 best_boost_round = best_iter
 
-        # Retrain on train+val using best_boost_round (no need for early stopping now)
+        
         dtrainval = xgb.DMatrix(np.vstack([X_train, X_val]), label=np.hstack([y_train, y_val]))
         dtest = xgb.DMatrix(X_test)
 
