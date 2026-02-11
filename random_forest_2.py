@@ -1,6 +1,5 @@
 """
 Random Forest for HPGe Detector-Grade Yield Prediction
-Implements methodology from Section 4.1 of the paper.
 """
 
 import numpy as np
@@ -11,12 +10,12 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 import warnings
 warnings.filterwarnings('ignore')
 
-# Set random seed for reproducibility
+
 SEED = 42
 np.random.seed(SEED)
 
 def load_and_preprocess_data(file_path='strict_full_converted_data.csv'):
-    """Load and preprocess data as per paper methodology."""
+    
     df = pd.read_csv(file_path)
     df = df.sort_values(['SheetName', 'Time (Sec)']).reset_index(drop=True)
     
@@ -28,7 +27,7 @@ def load_and_preprocess_data(file_path='strict_full_converted_data.csv'):
         'Number of net impurity of previous crystal added'
     ]
     
-    # Apply log1p transformation to impurity columns
+    
     impurity_cols = ['No. of net impurity atoms added', 
                     'Number of net impurity of previous crystal added']
     for col in impurity_cols:
@@ -50,7 +49,7 @@ def load_and_preprocess_data(file_path='strict_full_converted_data.csv'):
             sequences.append(X)
             targets.append(y)
     
-    # Convert to tabular features (mean, std, min, max)
+    
     X_tabular = []
     for seq in sequences:
         sample_features = []
@@ -83,7 +82,7 @@ def run_random_forest_cv(X, y, n_folds=5):
             X_train_val, y_train_val, test_size=0.2, random_state=SEED
         )
         
-        # Hyperparameter grid (paper values)
+        # Hyperparameter grid 
         param_grid = {
             'n_estimators': [50, 100, 200],
             'max_depth': [5, 10, 20],
@@ -102,7 +101,7 @@ def run_random_forest_cv(X, y, n_folds=5):
         
         grid_search.fit(X_train, y_train)
         
-        # Get best model
+        
         best_model = grid_search.best_estimator_
         
         # Predict on test set
@@ -118,7 +117,7 @@ def run_random_forest_cv(X, y, n_folds=5):
         print(f"Fold {fold}: MAE = {mae:.3f}%, RMSE = {rmse:.3f}%")
         print(f"  Best params: {grid_search.best_params_}")
     
-    # Calculate mean and standard deviation
+    
     mean_mae = np.mean(mae_scores)
     std_mae = np.std(mae_scores)
     mean_rmse = np.mean(rmse_scores)
@@ -130,12 +129,12 @@ def main():
     print("Random Forest for HPGe Yield Prediction")
     print("="*50)
     
-    # Load and preprocess data
+    
     X, y = load_and_preprocess_data()
     print(f"Dataset shape: {X.shape}")
     print(f"Target range: {y.min():.1f}% to {y.max():.1f}%")
     
-    # Run cross-validation
+    
     print("\nRunning 5-fold cross-validation with hyperparameter tuning...")
     mean_mae, std_mae, mean_rmse, std_rmse = run_random_forest_cv(X, y)
     
