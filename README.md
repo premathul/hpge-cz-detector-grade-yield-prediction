@@ -3,6 +3,8 @@
 Exported from the existing Conda environment named exactly `Ml_analysis` on macOS Apple Silicon. 
 ## Files
 
+Note the data used is the .csv format of the 'strict_full_converted_data' for all 49 crystal dataset used.
+
 - `requirements.txt`: Python packages currently reported by the environment's Python/pip, pinned to installed versions.
 - `requirement.txt`: Same content, using the filename requested.
 - `environment.yml`: Conda packages and pip packages reported by Conda, without the original machine's absolute prefix.
